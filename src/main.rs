@@ -52,16 +52,21 @@ impl Replacer {
         lazy_static! {
             static ref RE: Regex = Regex::new("\\$\\{(?P<expression>\\S+)\\}").unwrap();
         }
+        // Position to start looking for expression
         let mut start = 0;
         let mut instructions: Vec<ReplaceInstruction> = Vec::new();
+        // Iterating over matching expressions until no more expression is found
         loop {
             let mut locs = RE.capture_locations();
             let cap_match = RE.captures_read_at(&mut locs, &text, start);
-            if cap_match.is_none() {
+            if cap_match.is_none() { // pattern not found
                 break;
             }
+            // Position of the text to be replaced
             let outer_loc = locs.get(0).unwrap();
+            // Position of the text with replacement expression
             let inner_loc = locs.get(1).unwrap();
+            // replacement expression
             let expression = &text[inner_loc.0..inner_loc.1];
 
             start = outer_loc.1;
@@ -85,7 +90,7 @@ impl Replacer {
 }
 
 fn main() {
-    const CHUNK_SIZE: usize = 5000;
+    const CHUNK_SIZE: usize = 5000; // 
     let args: Vec<String> = env::args().collect();
     let template = &args[1];
     let replacer = Replacer::new(template.clone());
