@@ -1,7 +1,8 @@
 #[macro_use]
 extern crate lazy_static;
-use peg;
+use itertools::Itertools;
 use rand::prelude::*;
+use rayon::prelude::*;
 use regex::Regex;
 use std::env;
 
@@ -29,7 +30,7 @@ fn random_natural(min: u32, max: u32) -> String {
 
 fn random_value(args: &RngArgs) -> String {
     match args {
-        &RngArgs::Natural { min, max } => random_natural(min, max),
+        RngArgs::Natural { min, max } => random_natural(*min, *max),
     }
 }
 
@@ -48,7 +49,7 @@ impl Replacer {
         let instructions = Self::gen_instructions(&text);
         Self { text, instructions }
     }
-    fn gen_instructions(text: &String) -> Vec<ReplaceInstruction> {
+    fn gen_instructions(text: &str) -> Vec<ReplaceInstruction> {
         lazy_static! {
             static ref RE: Regex = Regex::new("\\$\\{(?P<expression>\\S+)\\}").unwrap();
         }
@@ -59,7 +60,8 @@ impl Replacer {
         loop {
             let mut locs = RE.capture_locations();
             let cap_match = RE.captures_read_at(&mut locs, &text, start);
-            if cap_match.is_none() { // pattern not found
+            if cap_match.is_none() {
+                // pattern not found
                 break;
             }
             // Position of the text to be replaced
@@ -90,7 +92,7 @@ impl Replacer {
 }
 
 fn main() {
-    const CHUNK_SIZE: usize = 5000; // 
+    const CHUNK_SIZE: usize = 5000; //
     let args: Vec<String> = env::args().collect();
     let template = &args[1];
     let replacer = Replacer::new(template.clone());
@@ -101,13 +103,10 @@ fn main() {
     };
 
     // iterating in chunks to minimize I/O overhead
-    let mut range = (1..=repeats).peekable();
-    while range.peek().is_some() {
-        let outputs: Vec<String> = range
-            .by_ref()
-            .take(CHUNK_SIZE)
-            .map(|_| replacer.replace())
-            .collect();
-        println!("{}", outputs.join("\n"));
+    let data_gen = (1..repeats).chunks(CHUNK_SIZE);
+    for chunk in data_gen.into_iter() {
+        let chunk: Vec<_> = chunk.collect();
+        let data: Vec<_> = chunk.into_par_iter().map(|_| replacer.replace()).collect();
+        println!("{}", data.join("\n"));
     }
 }
