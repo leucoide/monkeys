@@ -105,8 +105,11 @@ fn main() {
     // iterating in chunks to minimize I/O overhead
     let data_gen = (1..repeats).chunks(CHUNK_SIZE);
     for chunk in data_gen.into_iter() {
-        let chunk: Vec<_> = chunk.collect();
-        let data: Vec<_> = chunk.into_par_iter().map(|_| replacer.replace()).collect();
+        let data: Vec<_> = chunk
+            .collect::<Vec<_>>()
+            .into_par_iter()
+            .map(|_| replacer.replace())
+            .collect();
         println!("{}", data.join("\n"));
     }
 }
