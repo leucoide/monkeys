@@ -1,5 +1,5 @@
+use crate::{generators, lang};
 use regex::Regex;
-use crate::{generators,lang};
 
 struct ReplaceInstruction {
     position: (usize, usize),
@@ -18,7 +18,7 @@ impl Replacer {
     }
     fn gen_instructions(text: &String) -> Vec<ReplaceInstruction> {
         lazy_static! {
-            static ref RE: Regex = Regex::new("\\$\\{(?P<expression>\\S+)\\}").unwrap();
+            static ref RE: Regex = Regex::new("\\$\\{(?P<expression>\\S+?)\\}").unwrap();
         }
         // Position to start looking for expression
         let mut start = 0;
@@ -27,7 +27,8 @@ impl Replacer {
         loop {
             let mut locs = RE.capture_locations();
             let cap_match = RE.captures_read_at(&mut locs, &text, start);
-            if cap_match.is_none() { // pattern not found
+            if cap_match.is_none() {
+                // pattern not found
                 break;
             }
             // Position of the text to be replaced

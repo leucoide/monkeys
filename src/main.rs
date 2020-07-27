@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
-use std::env;
 use crate::replacer::Replacer;
+use std::env;
 pub mod generators;
 mod lang;
 mod replacer;
