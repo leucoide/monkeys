@@ -18,7 +18,7 @@ impl Replacer {
     }
     fn gen_instructions(text: &String) -> Vec<ReplaceInstruction> {
         lazy_static! {
-            static ref RE: Regex = Regex::new("\\$\\{(?P<expression>\\S+?)\\}").unwrap();
+            static ref RE: Regex = Regex::new("\\{(?P<expression>\\S+?)\\}").unwrap();
         }
         // Position to start looking for expression
         let mut start = 0;
