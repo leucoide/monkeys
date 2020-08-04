@@ -43,7 +43,7 @@ fn main() {
         let data: Vec<_> = chunk
             .collect::<Vec<_>>()
             .into_par_iter()
-            .map(|_| replacer.replace())
+            .map(|order| replacer.replace(order))
             .collect();
         println!("{}", data.join("\n"));
     }
